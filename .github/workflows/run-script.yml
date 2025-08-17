@@ -2,8 +2,13 @@ name: Run Weekly Script
 
 on:
   schedule:
-    - cron: "0 6 * * 1"   # Runs every Monday at 6:00 UTC
-  workflow_dispatch:      # Allows manual run from GitHub UI
+    - cron: "30 3 * * 1"   # Runs every Monday at 9:00 AM IST
+  workflow_dispatch:
+    inputs:
+      model_id:
+        description: 'Model ID to use'
+        required: false
+        default: 'gpt-5'
 
 jobs:
   run-script:
@@ -25,6 +30,7 @@ jobs:
 
       - name: Run script
         env:
+          MODEL_ID: ${{ github.event.inputs.model_id }}
           NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SMART_API_CLIENT_CODE: ${{ secrets.SMART_API_CLIENT_CODE }}

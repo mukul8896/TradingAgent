@@ -4,7 +4,6 @@ import asyncio
 import sys
 from utils.portfolio_fetcher import get_portfolio_stocks
 from prompts.prompts import PORTFOLIO_ANALYSIS_PROMPT
-from config import MODEL
 import openai
 import telegram
 import os
@@ -17,6 +16,8 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_MAX_LEN = 4096  # Telegram hard cap
+# Read model ID from environment or default to gpt-5
+MODEL = os.getenv("MODEL_ID", "gpt-5")
 
 def call_llm(prompt: str, data: dict) -> dict:
     """Call the LLM with a structured prompt and return parsed JSON dict."""
