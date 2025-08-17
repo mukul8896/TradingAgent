@@ -6,7 +6,7 @@ import json
 import pandas as pd
 
 # Initialize SmartAPI session
-smartApiActions = SmartApiActions(getSecretKeys())
+smartApiActions = SmartApiActions()
 # NSE master equity list (contains all ticker → company name mappings)
 NSE_EQUITY_LIST_URL = "https://archives.nseindia.com/content/equities/EQUITY_L.csv"
 # Load once globally to avoid repeated downloads

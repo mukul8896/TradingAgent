@@ -4,22 +4,18 @@ import asyncio
 import sys
 from utils.portfolio_fetcher import get_portfolio_stocks
 from prompts.prompts import PORTFOLIO_ANALYSIS_PROMPT
-from config import API_KEYS
-from utils.commonutils import getSecretKeys
+from config import MODEL
 import openai
 import telegram
+import os
 
 # ---- Windows event loop policy to avoid "Event loop is closed" (Proactor) ----
 if sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-openai.api_key = API_KEYS["openai_api"]
-keys = getSecretKeys()
-
-MODEL = "gpt-3.5-turbo"
-
-TELEGRAM_CHAT_ID = keys[6]
-TELEGRAM_TOKEN = keys[5]
+openai.api_key = os.getenv("OPENAI_API_KEY")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_MAX_LEN = 4096  # Telegram hard cap
 
 def call_llm(prompt: str, data: dict) -> dict:

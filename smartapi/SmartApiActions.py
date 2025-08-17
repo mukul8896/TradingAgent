@@ -11,12 +11,12 @@ import pandas as pd
 import time
 import re
 from utils.commonutils import token_lookup
-
+import os
 class SmartApiActions:
     
-    def __init__(self, secrets):
-        self.sessionObj = SmartConnect(api_key = secrets[0])
-        self.session = self.sessionObj.generateSession(secrets[2], secrets[3],TOTP(secrets[4]).now())
+    def __init__(self):
+        self.sessionObj = SmartConnect(api_key = os.getenv("SMART_API_KEY"))
+        self.session = self.sessionObj.generateSession(os.getenv("SMART_API_CLIENT_CODE"), os.getenv("SMART_API_PASSWORD"),TOTP(os.getenv("SMART_API_TOTP")).now())
         
         
     def getSmartAPISessionObject(self):
