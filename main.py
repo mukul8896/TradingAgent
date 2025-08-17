@@ -24,8 +24,7 @@ def call_llm(prompt: str, data: dict) -> dict:
     full_prompt = f"{prompt}\n\nData:\n{json.dumps(data, indent=2)}"
     resp = openai.chat.completions.create(
         model=MODEL,
-        messages=[{"role": "user", "content": full_prompt}],
-        temperature=0
+        messages=[{"role": "user", "content": full_prompt}]
     )
     content = resp.choices[0].message.content or ""
 
