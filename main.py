@@ -117,7 +117,7 @@ async def main():
     try:
         # Fetch holdings
         print("INFO: Fetching portfolio stocks...")
-        holding_data,other_hot_stocks = get_portfolio_stocks(smartApiActions,fetch_all_stock_news(smartApiActions))
+        holding_data,other_hot_stocks = get_portfolio_stocks(smartApiActions,fetch_all_stock_news())
         print("INFO: Fetching positive sentiment stocks news...")
         positive_sentiment_stocks_from_news_analysis = fetch_positive_stock_news(smartApiActions,other_hot_stocks)
         holding_data["positive_sentiment_stocks_from_news_analysis"] = positive_sentiment_stocks_from_news_analysis
