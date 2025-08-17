@@ -18,17 +18,25 @@ smartAPIDateFormate = "%Y-%m-%d %H:%M"
 ###################################### CSV File Related Methods ###################################
 ###################################################################################################
 def saveInstrumentList():
-    instrument_list = json.loads(urllib.request.urlopen("https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json").read())
-    json_file = open(os.path.join(os.path.expanduser("~")+"/hist_data", "instrumentList.json"), 'w')
-    json.dump(instrument_list, json_file, indent=4)
-    json_file.close()
+    instrument_list = json.loads(urllib.request.urlopen(
+        "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json"
+    ).read())
+
+    hist_data_dir = os.path.join(os.path.expanduser("~"), "hist_data")
+    os.makedirs(hist_data_dir, exist_ok=True)  # <-- create folder if missing
+
+    json_file_path = os.path.join(hist_data_dir, "instrumentList.json")
+    with open(json_file_path, 'w') as json_file:
+        json.dump(instrument_list, json_file, indent=4)
+
     
 def getInstrumentList():
-    if(os.path.isfile(os.path.join(os.path.expanduser("~")+"/hist_data", "instrumentList.json")) == False):
+    json_file_path = os.path.join(os.path.expanduser("~"), "hist_data", "instrumentList.json")
+    if not os.path.isfile(json_file_path):
         saveInstrumentList()
-    json_file = open(os.path.join(os.path.expanduser("~")+"/hist_data", "instrumentList.json"), 'r')
-    instrumentList = json.load(json_file)
-    json_file.close()
+    
+    with open(json_file_path, 'r') as json_file:
+        instrumentList = json.load(json_file)
     return instrumentList
 
 def token_lookup(ticker, exchange="NSE"):
