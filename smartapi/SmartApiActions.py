@@ -43,16 +43,18 @@ class SmartApiActions:
         return losers_list
     
     def get_ltp(self,ticker,exchange="NSE"):
+        token,exchange = token_lookup(ticker)
         time.sleep(1)
-        response = self.sessionObj.ltpData(exchange,"{}-EQ".format(ticker),token_lookup(ticker))
+        response = self.sessionObj.ltpData(exchange,"{}-EQ".format(ticker),token)
         ltp = response['data']["ltp"]
         return ltp
     
     def place_limit_order(self,ticker,buy_sell,price,quantity,productType="DELIVERY",exchange="NSE"):
+        token,exchange = token_lookup(ticker)
         params = {
                     "variety":"NORMAL",
                     "tradingsymbol":"{}-EQ".format(ticker),
-                    "symboltoken": token_lookup(ticker),
+                    "symboltoken": token,
                     "transactiontype":buy_sell,
                     "exchange":exchange,
                     "ordertype":"LIMIT",
@@ -66,6 +68,7 @@ class SmartApiActions:
     
     
     def getMargineRequire(self,ticker,buy_sell,quantity,productType="INTRADAY",exchange="NSE"):
+        token,exchange = token_lookup(ticker)
         params = {
                     "positions": [
                                       {
@@ -73,7 +76,7 @@ class SmartApiActions:
                                            "qty": quantity,
                                            "price": 0,
                                            "productType": productType,
-                                           "token": token_lookup(ticker),
+                                           "token": token,
                                            "tradeType": buy_sell
                                       }
                                  ]
@@ -82,6 +85,7 @@ class SmartApiActions:
         return response["data"]["totalMarginRequired"]
     
     def getBrokerage(self,ticker,buy_sell,quantity,price,productType="INTRADAY",exchange="NSE"):
+        token,exchange = token_lookup(ticker)
         params = {
                     "orders": [
                                 {
@@ -91,7 +95,7 @@ class SmartApiActions:
                                     "price": price,
                                     "exchange": exchange,
                                     "symbol_name": ticker,
-                                    "token": token_lookup(ticker)
+                                    "token": token
                                 }
                             ]
                         }
@@ -100,10 +104,11 @@ class SmartApiActions:
         return response["data"]["summary"]["total_charges"]
     
     def place_market_order(self,ticker,buy_sell,quantity,productType="INTRADAY",exchange="NSE"):
+        token,exchange = token_lookup(ticker)
         params = {
                     "variety":"NORMAL",
                     "tradingsymbol":"{}-EQ".format(ticker),
-                    "symboltoken":token_lookup(ticker),
+                    "symboltoken":token,
                     "transactiontype":buy_sell,
                     "exchange":exchange,
                     "ordertype":"MARKET",
@@ -117,10 +122,11 @@ class SmartApiActions:
         return response
     
     def place_stoploss_market_order(self,ticker,buy_sell,price,quantity,productType="INTRADAY",exchange="NSE"):
+        token,exchange = token_lookup(ticker)
         params = {
                     "variety":"STOPLOSS",
                     "tradingsymbol":"{}-EQ".format(ticker),
-                    "symboltoken":token_lookup(ticker),
+                    "symboltoken":token,
                     "transactiontype":buy_sell,
                     "exchange":exchange,
                     "ordertype":"STOPLOSS_MARKET",
@@ -150,6 +156,7 @@ class SmartApiActions:
         return response
     
     def modify_limit_order(self,ticker,order_id,price,quantity):
+        token,exchange = token_lookup(ticker)
         params = {
                     "variety":"NORMAL",
                     "orderid":order_id,
@@ -159,13 +166,14 @@ class SmartApiActions:
                     "price":price,
                     "quantity":quantity,
                     "tradingsymbol":"{}-EQ".format(ticker),
-                    "symboltoken":token_lookup(ticker),
+                    "symboltoken":token,
                     "exchange":"NSE"
                     }
         response = self.sessionObj.modifyOrder(params)
         return response
     
     def modify_order_type(self,ticker,order_id,order_type,quantity):
+        token,exchange = token_lookup(ticker)
         params = {
                     "variety":"NORMAL",
                     "orderid":order_id,
@@ -174,16 +182,17 @@ class SmartApiActions:
                     "duration":"DAY",
                     "tradingsymbol":"{}-EQ".format(ticker),
                     "quantity":quantity,
-                    "symboltoken":token_lookup(ticker),
-                    "exchange":"NSE"
+                    "symboltoken":token,
+                    "exchange":exchange
                     }
         response = self.sessionObj.modifyOrder(params)
         return response
     
     def get_candel_data(self,ticker, st_date, end_date, interval, exchange="NSE"):
+        token,exchange = token_lookup(ticker)
         params = {
                  "exchange": exchange,
-                 "symboltoken": token_lookup(ticker),
+                 "symboltoken": token,
                  "interval": interval,
                  "fromdate": (st_date).strftime('%Y-%m-%d %H:%M'),
                  "todate": (end_date).strftime('%Y-%m-%d %H:%M') 

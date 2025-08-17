@@ -5,22 +5,25 @@ from utils.indicator import get_portfolio_data_with_indicators
 import json
 import pandas as pd
 
-# Initialize SmartAPI session
-smartApiActions = SmartApiActions()
 # NSE master equity list (contains all ticker → company name mappings)
 NSE_EQUITY_LIST_URL = "https://archives.nseindia.com/content/equities/EQUITY_L.csv"
 # Load once globally to avoid repeated downloads
 equity_df = pd.read_csv(NSE_EQUITY_LIST_URL)
 
-def simplify_holdings_json(data):
-    """Reduce holding JSON to only essential fields for LLM input"""
-    required_keys = ["tradingsymbol", "quantity", "averageprice", "ltp", "profitandloss", "pnlpercentage"]
+def simplify_holdings_json(data, news_data):
+    """Reduce holding JSON to only essential fields and enrich with news data if available.
+    Also return cleaned news_data (excluding stocks already in holdings or merged).
+    """
+    required_keys = [
+        "tradingsymbol", "quantity", "averageprice",
+        "ltp", "profitandloss", "pnlpercentage"
+    ]
+
+    # Convert news_data into a lookup dictionary {tradingsymbol: {...news...}}
+    news_lookup = {n["tradingsymbol"]: n for n in news_data}
 
     simplified = {
-        "holdings": [
-            {k: h[k] for k in required_keys if k in h}
-            for h in data.get("holdings", [])
-        ],
+        "current_holdings": [],
         "totalholding": {
             "totalholdingvalue": data.get("totalholding", {}).get("totalholdingvalue", 0),
             "totalinvvalue": data.get("totalholding", {}).get("totalinvvalue", 0),
@@ -28,32 +31,32 @@ def simplify_holdings_json(data):
             "totalpnlpercentage": data.get("totalholding", {}).get("totalpnlpercentage", 0),
         }
     }
-    return simplified
 
-def get_portfolio_stocks():
+    used_tickers = set()
+
+    for h in data.get("holdings", []):
+        holding_entry = {k: h.get(k, 0 if k != "tradingsymbol" else "") for k in required_keys}
+
+        # If this stock is in news_data, merge news_headline + sentiment
+        ticker = h.get("tradingsymbol")
+        if ticker in news_lookup:
+            news_item = news_lookup[ticker]
+            holding_entry["news_headline"] = news_item.get("new_headline", "")
+            holding_entry["sentiment"] = news_item.get("sentiment", "")
+            used_tickers.add(ticker)
+
+        simplified["current_holdings"].append(holding_entry)
+        used_tickers.add(ticker)
+
+    # Remove news items for tickers already in holdings or merged
+    cleaned_news = [n for n in news_data if n["tradingsymbol"] not in used_tickers]
+
+    return simplified, cleaned_news
+
+
+def get_portfolio_stocks(smartApiActions,news_data):
     """Fetch company names of holdings from Angel One SmartAPI."""
     response = smartApiActions.getAllHoldings()  # JSON response
-    simplify_holdings_data = simplify_holdings_json(response)
-    portfolio_data_with_indicators = get_portfolio_data_with_indicators(simplify_holdings_data['holdings'],smartApiActions)
-    return portfolio_data_with_indicators
-    # company_names = []
-
-    # if response.get("status") and "data" in response and "holdings" in response["data"]:
-    #     holdings = response["data"]["holdings"]
-    #     for item in holdings:
-    #         ticker = item.get("tradingsymbol")
-    #         quantity = item.get("quantity", 0)
-
-    #         if ticker and quantity > 0:
-    #             ticker_clean = ticker.replace("-EQ", "")
-
-    #             # Lookup company name in NSE equity list
-    #             match = equity_df[equity_df["SYMBOL"] == ticker_clean]
-    #             if not match.empty:
-    #                 company_name = match["NAME OF COMPANY"].values[0]
-    #                 company_names.append(company_name)
-    #             else:
-    #                 print(f"⚠️ Warning: Could not find company name for {ticker_clean}")
-
-    # Remove duplicates and return as list
-    # return list(set(company_names))
+    simplify_holdings_data,other_hot_news = simplify_holdings_json(response,news_data)
+    simplify_holdings_data['current_holdings'] = get_portfolio_data_with_indicators(simplify_holdings_data['current_holdings'],smartApiActions)
+    return simplify_holdings_data,other_hot_news

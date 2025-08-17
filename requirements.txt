@@ -12,3 +12,7 @@ lxml
 python-telegram-bot
 nsetools
 nsepython
+# LangChain ecosystem
+langchain
+langchain-core
+langchain-community

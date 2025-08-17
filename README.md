@@ -1,2 +1,2 @@
 # TradingAgent
-AI Enabled trading AGent
+AI Enabled trading Agent

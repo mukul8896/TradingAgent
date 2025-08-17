@@ -7,6 +7,8 @@ from prompts.prompts import PORTFOLIO_ANALYSIS_PROMPT
 import openai
 import telegram
 import os
+from utils.news_fetcher import fetch_positive_stock_news, fetch_all_stock_news
+from smartapi.SmartApiActions import SmartApiActions
 
 # ---- Windows event loop policy to avoid "Event loop is closed" (Proactor) ----
 if sys.platform.startswith("win"):
@@ -16,15 +18,14 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_MAX_LEN = 4096  # Telegram hard cap
-# Read model ID from environment or default to gpt-5
 MODEL = os.getenv("MODEL_ID", "gpt-5")
 
 def call_llm(prompt: str, data: dict) -> dict:
     """Call the LLM with a structured prompt and return parsed JSON dict."""
-    full_prompt = f"{prompt}\n\nData:\n{json.dumps(data, indent=2)}"
+    full_prompt = f"{prompt}\n\nData:\n{json.dumps(data, indent=1)}"
     resp = openai.chat.completions.create(
         model=MODEL,
-        messages=[{"role": "user", "content": full_prompt}]
+        messages=[{"role": "user", "content": full_prompt}],
     )
     content = resp.choices[0].message.content or ""
 
@@ -111,13 +112,16 @@ async def send_portfolio_analysis(bot: telegram.Bot, analysis_json: dict):
 async def main():
     # Create bot inside the running loop and ensure graceful cleanup
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-
+    # Initialize SmartAPI session
+    smartApiActions = SmartApiActions()
     try:
         # Fetch holdings
         print("INFO: Fetching portfolio stocks...")
-        holding_data = get_portfolio_stocks()
-        print("INFO: Current holdings:\n", json.dumps(holding_data, indent=4))
-        print(f"{PORTFOLIO_ANALYSIS_PROMPT}\n\nData:\n{json.dumps(holding_data, indent=2)}")
+        holding_data,other_hot_stocks = get_portfolio_stocks(smartApiActions,fetch_all_stock_news(smartApiActions))
+        print("INFO: Fetching positive sentiment stocks news...")
+        positive_sentiment_stocks_from_news_analysis = fetch_positive_stock_news(smartApiActions,other_hot_stocks)
+        holding_data["positive_sentiment_stocks_from_news_analysis"] = positive_sentiment_stocks_from_news_analysis
+        print("INFO: Stocks Data:\n", json.dumps(holding_data, indent=1))
 
         # LLM analysis
         print("INFO: Running portfolio analysis...")
