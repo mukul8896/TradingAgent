@@ -1,0 +1,14 @@
+openai
+requests
+smartapi-python
+pyotp
+logzero
+websocket-client
+pandas
+ta
+scikit-learn
+bs4
+lxml
+python-telegram-bot
+nsetools
+nsepython
