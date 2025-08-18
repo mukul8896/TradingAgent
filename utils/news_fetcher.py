@@ -23,8 +23,10 @@ def fetch_all_stock_news():
     for item in data:
         sm_symbol = item.get("sm_symbol", "").strip()
         sentiment = item.get("overall_sentiment", "").strip()
-        if not sm_symbol or sm_symbol.lower() == "global" or sm_symbol.lower() == "ipo" or sm_symbol.lower() == "commodities":
-            continue  # skip non-stock news
+        nse_scrip_code = item.get("nse_scrip_code", "").strip()
+        bse_scrip_code = item.get("bse_scrip_code", "").strip()
+        if (not sm_symbol or ((not nse_scrip_code or str(nse_scrip_code).strip() == "0") and (not bse_scrip_code or str(bse_scrip_code).strip() == "0"))):
+            continue
 
         news = item.get("news_object", {})
         title = news.get("title", "")[:200]   # limit title length
