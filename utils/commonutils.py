@@ -41,7 +41,7 @@ def getInstrumentList():
 
 def token_lookup(ticker, exchange="NSE"):
     instrument_list = getInstrumentList()
-    ticker = ticker.replace("-EQ","").replace("SM","")
+    ticker = ticker.replace("-EQ","").replace("-SM","")
     for instrument in instrument_list:
         if instrument["name"] == ticker and instrument["exch_seg"] == exchange:
             return instrument["token"], exchange
