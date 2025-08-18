@@ -41,26 +41,18 @@ def getInstrumentList():
 
 def token_lookup(ticker, exchange="NSE"):
     instrument_list = getInstrumentList()
-
-    # First try with the given exchange
+    ticker = ticker.replace("-EQ","").replace("SM","")
     for instrument in instrument_list:
         if instrument["name"] == ticker and instrument["exch_seg"] == exchange:
-            # Only NSE uses -EQ suffix check
-            if exchange == "NSE":
-                if instrument["symbol"].split('-')[-1] == "EQ":
-                    return instrument["token"],exchange
-            else:
-                return instrument["token"],exchange
-
+            return instrument["token"], exchange
     # If not found in NSE, try BSE
     if exchange == "NSE":
         for instrument in instrument_list:
             if instrument["name"] == ticker and instrument["exch_seg"] == "BSE":
-                return instrument["token"],"BSE"
+                return instrument["token"], "BSE"
 
-    # Not found in either
     return None
-     
+
 def symbol_lookup(token, exchange="NSE"):
     instrument_list = getInstrumentList()
     for instrument in instrument_list:
