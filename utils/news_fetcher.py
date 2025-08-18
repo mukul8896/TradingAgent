@@ -23,8 +23,8 @@ def fetch_all_stock_news():
     for item in data:
         sm_symbol = item.get("sm_symbol", "").strip()
         sentiment = item.get("overall_sentiment", "").strip()
-        nse_scrip_code = item.get("nse_scrip_code", "").strip()
-        bse_scrip_code = item.get("bse_scrip_code", "").strip()
+        nse_scrip_code = str(item.get("nse_scrip_code", "")).strip()
+        bse_scrip_code = str(item.get("bse_scrip_code", "")).strip()
         if (not sm_symbol or ((not nse_scrip_code or str(nse_scrip_code).strip() == "0") and (not bse_scrip_code or str(bse_scrip_code).strip() == "0"))):
             continue
 
