@@ -5,11 +5,6 @@ from utils.indicator import get_portfolio_data_with_indicators
 import json
 import pandas as pd
 
-# NSE master equity list (contains all ticker → company name mappings)
-NSE_EQUITY_LIST_URL = "https://archives.nseindia.com/content/equities/EQUITY_L.csv"
-# Load once globally to avoid repeated downloads
-equity_df = pd.read_csv(NSE_EQUITY_LIST_URL)
-
 def simplify_holdings_json(data, news_data):
     """Reduce holding JSON to only essential fields and enrich with news data if available.
     Also return cleaned news_data (excluding stocks already in holdings or merged).
