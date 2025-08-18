@@ -86,16 +86,16 @@ async def send_portfolio_analysis(bot: telegram.Bot, analysis_json: dict):
             )
         await send_to_telegram(bot, msg)
 
-    # 2) Long-term ideas
-    long_term = analysis_json.get("long_term_stocks", [])
-    if long_term:
-        msg_lines = ["🌟 *Long-Term Hot Stocks:*"]
-        for s in long_term:
-            msg_lines.append(
-                f"\n*{s.get('ticker','')}* at {fmt_price(s.get('BUY_PRICE'))}\n"
-                f"Reason: {s.get('reason','')}"
-            )
-        await send_to_telegram(bot, "\n".join(msg_lines))
+    # # 2) Long-term ideas
+    # long_term = analysis_json.get("long_term_stocks", [])
+    # if long_term:
+    #     msg_lines = ["🌟 *Long-Term Hot Stocks:*"]
+    #     for s in long_term:
+    #         msg_lines.append(
+    #             f"\n*{s.get('ticker','')}* at {fmt_price(s.get('BUY_PRICE'))}\n"
+    #             f"Reason: {s.get('reason','')}"
+    #         )
+    #     await send_to_telegram(bot, "\n".join(msg_lines))
 
     # 3) Swing trades
     swings = analysis_json.get("top_5_swing_trade_stocks", []) or \
@@ -105,6 +105,7 @@ async def send_portfolio_analysis(bot: telegram.Bot, analysis_json: dict):
         for s in swings:
             msg_lines.append(
                 f"\n*{s.get('ticker','')}* at {fmt_price(s.get('BUY_PRICE'))}\n"
+                f"({s.get('confidence','')} confident)\n"
                 f"Reason: {s.get('reason','')}"
             )
         await send_to_telegram(bot, "\n".join(msg_lines))

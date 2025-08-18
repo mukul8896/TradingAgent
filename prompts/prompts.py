@@ -27,7 +27,7 @@ Your tasks:
    - Provide a suggested buy price range using support/resistance from technicals.  
 5. If recommending HOLD:  
    - Explain why the stock should be held, considering momentum, sector, or fundamentals.  
-6. Additionally, from **positive_sentiment_stocks_from_news_analysis**, suggest top 5 with high confidence **swing trading recommendations** for short-term gains (expected 5–10% in 1–2 months). For each swing trade:  
+6. Additionally, from **positive_sentiment_stocks_from_news_analysis**, suggest top 3 with highest confidence **swing trading recommendations** for short-term gains (expected 5–10% in 1–2 months). For each swing trade:  
    - Provide ticker name  
    - Suggested buy price range  
    - Reason for short-term trade (technical setup, sector momentum, support/resistance, MACD/RSI signals, and safety factors like low volatility or trend strength)  
@@ -46,6 +46,7 @@ Return the analysis strictly in the following JSON format, with no additional te
   "swing_trade_stocks": [
     {
       "ticker": "SWING_TICKER",
+      "confidence": "0-100%",
       "BUY_PRICE": "Suggested entry price range e.g., (xxx - yyy)",
       "reason": "Technical/sector/fundamental setup for expected 5-10% short-term gain, with risk/safety factors explained."
     }
