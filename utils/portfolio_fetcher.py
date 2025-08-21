@@ -1,7 +1,6 @@
 # utils/portfolio_fetcher.py
 from smartapi.SmartApiActions import SmartApiActions
-from utils.commonutils import getSecretKeys
-from utils.indicator import get_portfolio_data_with_indicators
+from inidcators.indicator_utils import enriched_json_with_indicators
 import json
 import pandas as pd
 
@@ -53,5 +52,5 @@ def get_portfolio_stocks(smartApiActions,news_data):
     """Fetch company names of holdings from Angel One SmartAPI."""
     response = smartApiActions.getAllHoldings()  # JSON response
     simplify_holdings_data,other_hot_news = simplify_holdings_json(response,news_data)
-    simplify_holdings_data['current_holdings'] = get_portfolio_data_with_indicators(simplify_holdings_data['current_holdings'],smartApiActions)
+    simplify_holdings_data['current_holdings'] = enriched_json_with_indicators(simplify_holdings_data['current_holdings'],"ONE_DAY",smartApiActions)
     return simplify_holdings_data,other_hot_news

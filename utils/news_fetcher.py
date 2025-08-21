@@ -4,7 +4,7 @@ import time
 import os
 from config import NEWS_API_URL,TRADIENT_NEWS_URL
 from datetime import datetime, timedelta
-from utils.indicator import get_portfolio_data_with_indicators
+from inidcators.indicator_utils import enriched_json_with_indicators
 
 def fetch_all_stock_news():
     """
@@ -23,7 +23,6 @@ def fetch_all_stock_news():
     summarized_news = []
     for item in data:
         sm_symbol = item.get("sm_symbol", "").strip()
-        sentiment = item.get("overall_sentiment", "").strip()
         nse_scrip_code = str(item.get("nse_scrip_code", "")).strip()
         bse_scrip_code = str(item.get("bse_scrip_code", "")).strip()
         if (not sm_symbol or ((not nse_scrip_code or str(nse_scrip_code).strip() == "0") and (not bse_scrip_code or str(bse_scrip_code).strip() == "0"))):
@@ -32,7 +31,7 @@ def fetch_all_stock_news():
         news = item.get("news_object", {})
         title = news.get("title", "")[:200]   # limit title length
         summary = news.get("text", "")[:1000]  # limit summary length
-        sentiment = news.get("overall_sentiment", "neutral")
+        sentiment = news.get("overall_sentiment", "")
         publish_ts = item.get("publish_date", 0)
         publish_dt = datetime.fromtimestamp(publish_ts / 1000).strftime("%Y-%m-%d %H:%M:%S") if publish_ts else ""
 
@@ -46,7 +45,7 @@ def fetch_all_stock_news():
         }) 
     return summarized_news
 
-def fetch_positive_stock_news(smartApiActions, news_data=None):
+def fetch_positive_stock_news(news_data=None):
     """
     Fetches latest stock-specific NSE/BSE news from Tradient API.
     Only includes items where sm_symbol is non-empty and not 'global'.
@@ -57,6 +56,31 @@ def fetch_positive_stock_news(smartApiActions, news_data=None):
             response = requests.get(TRADIENT_NEWS_URL, timeout=10)
             response.raise_for_status()
             news_data = response.json().get("data", {}).get("latest_news", [])
+            summarized_news = []
+            for item in news_data:
+                sm_symbol = item.get("sm_symbol", "").strip()
+                nse_scrip_code = str(item.get("nse_scrip_code", "")).strip()
+                bse_scrip_code = str(item.get("bse_scrip_code", "")).strip()
+                if (not sm_symbol or ((not nse_scrip_code or str(nse_scrip_code).strip() == "0") and (not bse_scrip_code or str(bse_scrip_code).strip() == "0"))):
+                    continue # skip non-stock news         
+                news = item.get("news_object", {})
+                title = news.get("title", "")[:200]   # limit title length
+                summary = news.get("text", "")[:1000]  # limit summary length
+                sentiment = news.get("overall_sentiment", "neutral")
+                if sentiment.lower() == "negative" or sentiment.lower() == "neutral":
+                    continue 
+                publish_ts = item.get("publish_date", 0)
+                publish_dt = datetime.fromtimestamp(publish_ts / 1000).strftime("%Y-%m-%d %H:%M:%S") if publish_ts else ""
+
+                summarized_news.append({
+                    "tradingsymbol": sm_symbol,
+                    "new_headline": title,
+                    "sentiment": sentiment,
+                    # "summary": summary,
+                    #"publish_dt":publish_dt,
+                    #"publish_ts":publish_ts,
+                })
+            return summarized_news
         except Exception as e:
             print(f"Error fetching news: {e}")
             return []
@@ -74,8 +98,7 @@ def fetch_positive_stock_news(smartApiActions, news_data=None):
             "tradingsymbol": tradingsymbol,
             "new_headline": new_headline
             # "summary": summary
-        })
-    summarized_news = get_portfolio_data_with_indicators(summarized_news,smartApiActions)    
+        })   
     return summarized_news
 
 def fetch_newapi_articles(query=None):

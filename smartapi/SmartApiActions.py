@@ -10,13 +10,14 @@ from pyotp import TOTP
 import pandas as pd
 import time
 import re
-from utils.commonutils import token_lookup
+from utils.commonutils import token_lookup,saveInstrumentList
 import os
 class SmartApiActions:
     
     def __init__(self):
         self.sessionObj = SmartConnect(api_key = os.getenv("SMART_API_KEY"))
         self.session = self.sessionObj.generateSession(os.getenv("SMART_API_CLIENT_CODE"), os.getenv("SMART_API_PASSWORD"),TOTP(os.getenv("SMART_API_TOTP")).now())
+        saveInstrumentList()
         
         
     def getSmartAPISessionObject(self):

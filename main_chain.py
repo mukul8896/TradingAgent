@@ -4,7 +4,7 @@ import asyncio
 import sys
 from utils.portfolio_fetcher import get_portfolio_stocks
 from utils.news_fetcher import fetch_stock_news
-from prompts.prompts import PORTFOLIO_ANALYSIS_PROMPT
+from prompts.portfolio_prompt import PORTFOLIO_ANALYSIS_PROMPT
 import openai
 import telegram
 import os

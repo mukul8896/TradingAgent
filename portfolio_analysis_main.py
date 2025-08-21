@@ -3,22 +3,21 @@ import json
 import asyncio
 import sys
 from utils.portfolio_fetcher import get_portfolio_stocks
-from prompts.prompts import PORTFOLIO_ANALYSIS_PROMPT
+from prompts.portfolio_prompt import PORTFOLIO_ANALYSIS_PROMPT
 import openai
 from notification.telegram_msg import send_portfolio_analysis
 import os
 import telegram
 from config import MODEL_ID
+from inidcators.indicator_utils import enriched_json_with_indicators
 from utils.news_fetcher import fetch_positive_stock_news, fetch_all_stock_news
-
 from smartapi.SmartApiActions import SmartApiActions
-
+from config import MODEL_ID
+openai.api_key = os.getenv("OPENAI_API_KEY")
+MODEL = os.getenv("MODEL_ID", MODEL_ID)
 # ---- Windows event loop policy to avoid "Event loop is closed" (Proactor) ----
 if sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-openai.api_key = os.getenv("OPENAI_API_KEY")
-MODEL = os.getenv("MODEL_ID", MODEL_ID)
 
 def call_llm(prompt: str, data: dict) -> dict:
     """Call the LLM with a structured prompt and return parsed JSON dict."""
@@ -56,7 +55,8 @@ async def main():
         print("INFO: Fetching portfolio stocks...")
         holding_data,other_hot_stocks = get_portfolio_stocks(smartApiActions,fetch_all_stock_news())
         print("INFO: Fetching positive sentiment stocks news...")
-        positive_sentiment_stocks_from_news_analysis = fetch_positive_stock_news(smartApiActions,other_hot_stocks)
+        positive_sentiment_stocks_from_news_analysis = fetch_positive_stock_news(other_hot_stocks)
+        positive_sentiment_stocks_from_news_analysis = enriched_json_with_indicators(positive_sentiment_stocks_from_news_analysis,"ONE_DAY",smartApiActions)
         holding_data["positive_sentiment_stocks_from_news_analysis"] = positive_sentiment_stocks_from_news_analysis
         print("INFO: Stocks Data:\n", json.dumps(holding_data, indent=1))
 

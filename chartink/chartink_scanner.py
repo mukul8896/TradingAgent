@@ -21,4 +21,4 @@ def stocks_scanner(query):
         if "nsecode" not in stock_list.columns:
             return []
         
-        return stock_list["nsecode"].tolist()
+        return stock_list["nsecode"].apply(lambda x: {"tradingsymbol": x}).tolist()
