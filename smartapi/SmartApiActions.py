@@ -12,6 +12,7 @@ import time
 import re
 from utils.commonutils import token_lookup,saveInstrumentList
 import os
+import requests, json
 class SmartApiActions:
     
     def __init__(self):
@@ -22,6 +23,9 @@ class SmartApiActions:
         
     def getSmartAPISessionObject(self):
         return self.sessionObj
+    
+    def getSmartAPIToken(self):
+        return self.sessionObj.access_token
     
     def getGainers(self):
         params_gainers = {
@@ -66,6 +70,93 @@ class SmartApiActions:
                     }
         response = self.sessionObj.placeOrder(params)
         return response
+    
+    # def place_robo_limit_order(
+    #                             self, 
+    #                             ticker, 
+    #                             buy_sell, 
+    #                             price, 
+    #                             quantity, 
+    #                             squareoff, 
+    #                             stoploss, 
+    #                             trailing_sl,
+    #                             productType="INTRADAY", 
+    #                             exchange="NSE"
+    #                         ):
+    # # Get token and exchange from lookup
+    #     token, exchange = token_lookup(ticker)
+    #     params = {
+    #         "variety": "ROBO",                          # ROBO order
+    #         "tradingsymbol": "{}-EQ".format(ticker),    # Example: RELIANCE-EQ
+    #         "symboltoken": token,
+    #         "transactiontype": buy_sell,                # "BUY" / "SELL"
+    #         "exchange": exchange,
+    #         "ordertype": "LIMIT",                       # Entry at Limit Price
+    #         "producttype": productType,                 # INTRADAY / DELIVERY
+    #         "duration": "DAY",
+    #         "price": str(price),                        # Entry price
+    #         "quantity": str(quantity),
+    #         "squareoff": str(squareoff),                # Target difference
+    #         "stoploss": str(stoploss),                  # SL difference
+    #         "trailingStopLoss": str(trailing_sl)        # Trailing SL step
+    #     }
+
+    #     response = self.sessionObj.placeOrder(params)
+    #     return response
+    
+
+    def place_robo_order(self, 
+                        ticker, 
+                        buy_sell, 
+                        price, 
+                        quantity, 
+                        squareoff, 
+                        stoploss, 
+                        trailing_sl,
+                        productType="INTRADAY", 
+                        exchange="NSE"
+                    ):
+        # Get token and exchange from lookup
+        token, exchange = token_lookup(ticker)
+        params = {
+            "variety": "ROBO",                          # ROBO order
+            "tradingsymbol": "{}-EQ".format(ticker),    # Example: RELIANCE-EQ
+            "symboltoken": token,
+            "transactiontype": buy_sell,                # "BUY" / "SELL"
+            "exchange": exchange,
+            "ordertype": "LIMIT",                       # Entry at Limit Price
+            "producttype": productType,                 # INTRADAY / DELIVERY
+            "duration": "DAY",
+            "price": str(price),                        # Entry price
+            "quantity": str(quantity),
+            "squareoff": str(squareoff),                # Target difference
+            "stoploss": str(stoploss),                  # SL difference
+            "trailingStopLoss": str(trailing_sl)        # Trailing SL step
+        }
+        """
+        Place order using AngelOne SmartAPI placeOrder endpoint and return full server response.
+        """
+        url = "https://apiconnect.angelbroking.com/rest/secure/angelbroking/order/v1/placeOrder"
+
+        headers = {
+            "Content-Type": "application/json",
+            "X-ClientLocalIP": "127.0.0.1",
+            "X-ClientPublicIP": "106.193.147.98",
+            "X-MACAddress": "11:22:33:44:55:66",
+            "Accept": "application/json",
+            "X-PrivateKey": os.getenv("SMART_API_KEY"),
+            "X-UserType": "USER",
+            "X-SourceID": "WEB",
+            "Authorization": f"Bearer {self.getSmartAPIToken()}",
+        }
+
+        try:
+            response = requests.post(url, headers=headers, json=params, timeout=10)
+            data = response.json()
+            return data
+        except Exception as e:
+            print(f"⚠️ Request Exception: {e}")
+            return None
     
     
     def getMargineRequire(self,ticker,buy_sell,quantity,productType="INTRADAY",exchange="NSE"):

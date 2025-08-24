@@ -12,58 +12,61 @@ from notification.telegram_msg import send_to_telegram
 from prompts.intraday_prompt import INTRADAY_STOCK_PROMPT
 from inidcators.indicator_utils import enriched_json_with_indicators
 from smartapi.SmartApiActions import SmartApiActions
-from utils.news_fetcher import fetch_positive_stock_news
 from prompts.intraday_prompt import INTRADAY_STOCK_PROMPT
-import openai
-from config import MODEL_ID
+from llm_api.openaiAPI import call_llm
 
 # ---- Windows event loop policy to avoid "Event loop is closed" (Proactor) ----
 if sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
-MODEL = os.getenv("MODEL_ID", MODEL_ID)
-def call_llm(prompt, data):
-    """Call the LLM with a structured prompt and return parsed JSON dict."""
-    full_prompt = f"{prompt}\n\nData:\n{json.dumps(data, indent=1)}"
-    resp = openai.chat.completions.create(
-        model=os.getenv("MODEL_ID", MODEL_ID),
-        messages=[{"role": "user", "content": full_prompt}],
-    )
-    content = resp.choices[0].message.content or ""
-
-    # Strip accidental code fences if any
-    cleaned = content.replace("```json", "").replace("```", "").strip()
-
-    # Parse JSON safely
-    try:
-        return json.loads(cleaned)
-    except json.JSONDecodeError as e:
-        # Fall back: try to extract JSON substring if model added extra text
-        start = cleaned.find("{")
-        end = cleaned.rfind("}")
-        if start != -1 and end != -1 and end > start:
-            try:
-                return json.loads(cleaned[start:end+1])
-            except Exception:
-                pass
-        raise RuntimeError(f"LLM did not return valid JSON: {e}\nRaw:\n{content}")
-
 async def main():
     bot = telegram.Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
     # Initialize SmartAPI session
     smartApiActions = SmartApiActions()
+    
     try:
         scan_data = stocks_scanner(MONTHLY_SWING_QUERY)
-        print(f"INFO : Intraday Tickers at {dt.datetime.now().hour}:{dt.datetime.now().minute}:\n{scan_data}")
+        print(f"INFO : Intraday Tickers at {dt.datetime.now().hour}:{dt.datetime.now().minute}:\n{[item['tradingsymbol'] for item in scan_data]}")
         scan_data = enriched_json_with_indicators(scan_data,"ONE_DAY",smartApiActions)
+        scan_data = enriched_json_with_indicators(scan_data,"ONE_HOUR",smartApiActions)
         scan_data = enriched_json_with_indicators(scan_data,"FIFTEEN_MINUTE",smartApiActions)
         scan_data = enriched_json_with_indicators(scan_data,"FIVE_MINUTE",smartApiActions)
+        print(f"INFO : {json.dumps(scan_data,indent=1)}")
+        
         # LLM analysis
         print("INFO : Running intraday analysis...")
         analysis = call_llm(INTRADAY_STOCK_PROMPT, scan_data)
-        print(json.dumps(analysis,indent=1))
-        await bot.send_message(chat_id=os.getenv("TELEGRAM_BOT_CHAT_ID"),text=json.dumps(analysis,indent=1))
+        print(f"INFO : {analysis}")
+        await send_to_telegram(bot=bot,message=json.dumps(analysis))
+
+        if analysis.get("ticker") and analysis.get("direction") and analysis.get("ticker") != "N/A":
+            response = None
+            await send_to_telegram(bot=bot,message=json.dumps(analysis, indent=1))
+            print(f"INFO : Placing robo order for {analysis.get('ticker')} @ {analysis.get('entry_price')}")
+            response = smartApiActions.place_robo_order(ticker = analysis.get("ticker"), 
+                            buy_sell = analysis.get("direction"), 
+                            price = analysis.get("entry_price"), 
+                            quantity = analysis.get("qty", "1"), 
+                            squareoff = analysis.get("squareoff"), 
+                            stoploss = analysis.get("stop_loss"), 
+                            trailing_sl = analysis.get("trailing_stop_loss"),
+                            productType="INTRADAY", 
+                            exchange="NSE"
+                        )
+            # Handle SmartAPI response
+            if response is not None:
+                if response.get("status") is False:
+                    print(f"ERROR : Order Failed: {response['message']}")
+                    await send_to_telegram(bot=bot,message=f"INFO : Order Failed: {response['message']}")
+                else:
+                    print(f"INFO : Order Success: {json.dumps(response, indent=2)}")
+            else:
+                print(f"ERROR : Request error while placing order")  
+                await send_to_telegram(bot=bot,message=f"ERROR : Request error while placing order")  
+        else:
+            print("INFO : No valid trade recommendation from LLM (N/A).")
+            await send_to_telegram(bot=bot,message=f"No valid trade recommendation from LLM (N/A).") 
+            
 
     finally:
         # Try to explicitly close underlying HTTP client to avoid noisy shutdown on Windows

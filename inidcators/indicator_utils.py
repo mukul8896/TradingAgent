@@ -43,7 +43,7 @@ def hist_data_by_ticker(ticker, startDate, endDate, interval, smartApiActions):
     try:
         df_data = pd.DataFrame(columns=["date","open","high","low","close","volume"])
         st_date = startDate
-        print(f"INFO : Fetching historical data for {ticker}")
+        print(f"INFO : Fetching historical data for {ticker} interval {interval}")
         while st_date < endDate:
             time.sleep(1)  # avoid throttling
 
