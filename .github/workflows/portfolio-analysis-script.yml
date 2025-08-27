@@ -2,7 +2,7 @@ name: Portfolio Analysis
 
 on:
   schedule:
-    - cron: "30 3 * * 1"   # Runs every Monday at 9:00 AM IST
+    - cron: "0 4 * * 1"   # Runs every Monday at 9:30 AM IST
   workflow_dispatch:
     inputs:
       model_id:

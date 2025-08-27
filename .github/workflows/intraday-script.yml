@@ -2,7 +2,7 @@ name: Intraday Script
 
 on:
   schedule:
-    - cron: "30 4 * * 1-5"   # Runs every day at 10:00 AM IST
+    - cron: "25 4 * * 1-5"   # Runs every day at 10:00 AM IST
   workflow_dispatch:       # Keep manual trigger, but no inputs
 
 jobs:
