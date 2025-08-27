@@ -12,7 +12,7 @@ from datetime import datetime
 def calculate_indicators(df,interval):
     df = df.copy()
     if len(df) < 30:   # not enough data for indicators
-        for col in ["RSI","EMA50","EMA20","EMA200","MACD","MACD_signal","MACD_hist","bollinger_upper","bollinger_lower","VWAP","volume_spike","ATR"]:
+        for col in ["RSI","EMA20","EMA50","EMA200","MACD","MACD_signal","MACD_histogram","bollinger_upper","bollinger_lower","VWAP","volume_spike","ATR"]:
             df[col] = np.nan
         return df
     df["RSI"] = RSI(df)["RSI"]
@@ -72,11 +72,31 @@ def hist_data_by_ticker(ticker, startDate, endDate, interval, smartApiActions):
         print(f"ERROR in hist_data_by_ticker for {ticker}: {e}")
         return None
 
+def get_rsi_cross_over(interval,scan_data,smartApiActions):
+    start_date = get_start_date(interval)
+    crossed_rsi_ticker = []
+    for stock in scan_data:
+        ticker = stock["tradingsymbol"].replace("-EQ", "")
+        df = hist_data_by_ticker(
+            ticker,
+            startDate=start_date,
+            endDate=datetime.now(),
+            interval=interval,
+            smartApiActions=smartApiActions
+        )
+        if df is not None and not df.empty and len(df) >= 100:
+            df = calculate_indicators(df,interval)
+            latest = df.iloc[-1]
+            previous_day = df.iloc[-2]
+            if round(latest["RSI"],2) > 50 and round(previous_day["RSI"],2) < 50:
+                crossed_rsi_ticker.append(ticker)
+    return [{"tradingsymbol": x} for x in crossed_rsi_ticker]
+
 
 # --- Merge indicators with portfolio ---
 # input json formate should be [{"tradingsymbol": "RELIANCE"}, {"tradingsymbol": "TCS"}]
 def enriched_json_with_indicators(json_data,interval,smartApiActions):
-    enriched_portfolio = []
+    enriched_data = []
     start_date = get_start_date(interval)
     for stock in json_data:
         ticker = stock["tradingsymbol"].replace("-EQ", "")
@@ -94,17 +114,20 @@ def enriched_json_with_indicators(json_data,interval,smartApiActions):
             if indicators_data.get("ltp") is None:
                 stock["ltp"] = smartApiActions.get_ltp(ticker)
             indicators_data["RSI"] = round(latest["RSI"],2)
+
             if interval!="ONE_DAY":
                 indicators_data["VWAP"] = round(latest["VWAP"],2)
                 indicators_data["volume_spike"] = str(latest["volume_spike"])
+
             indicators_data["ATR"] = round(latest["ATR"],2)
             indicators_data["EMA20"] = round(latest["EMA20"],2)
             indicators_data["EMA50"] = round(latest["EMA50"],2)
             indicators_data["EMA200"] = round(latest["EMA200"],2)
             indicators_data["MACD"] = round(latest["MACD"],2)
+            indicators_data["MACD_signal"] = round(latest["MACD_signal"],2)
             indicators_data["bollinger_upper"] = round(latest["bollinger_upper"],2)
             indicators_data["bollinger_lower"] = round(latest["bollinger_lower"],2)
             stock[interval+"_INTERVAL"] = indicators_data   
-            enriched_portfolio.append(stock)
+            enriched_data.append(stock)
     
-    return enriched_portfolio
+    return enriched_data

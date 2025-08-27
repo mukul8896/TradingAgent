@@ -24,11 +24,7 @@ async def main():
     try:
         # Fetch holdings
         print("INFO: Fetching portfolio stocks...")
-        holding_data,other_hot_stocks = get_portfolio_stocks(smartApiActions,fetch_all_stock_news())
-        print("INFO: Fetching positive sentiment stocks news...")
-        positive_sentiment_stocks_from_news_analysis = fetch_positive_stock_news(other_hot_stocks)
-        positive_sentiment_stocks_from_news_analysis = enriched_json_with_indicators(positive_sentiment_stocks_from_news_analysis,"ONE_DAY",smartApiActions)
-        holding_data["positive_sentiment_stocks_from_news_analysis"] = positive_sentiment_stocks_from_news_analysis
+        holding_data = get_portfolio_stocks(smartApiActions)
         print("INFO: Stocks Data:\n", json.dumps(holding_data, indent=1))
 
         # LLM analysis

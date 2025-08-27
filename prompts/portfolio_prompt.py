@@ -13,25 +13,16 @@ You will receive portfolio and market news sentiment data in JSON format with th
     - new_headline if any esle not present
     - sentiment if any else not present  
 - totalholding: Aggregated portfolio values (totalholdingvalue, totalinvvalue, totalprofitandloss, totalpnlpercentage)  
-- positive_sentiment_stocks_from_news_analysis: List of stocks with positive market news, each containing:  
-    - tradingsymbol  
-    - new_headline (short news summary)  
-    - ltp and technical indicators (RSI, EMA, MACD, Bollinger Bands)  
 
 Your tasks:  
 1. Analyze each stock in **current_holdings** and recommend one of: BUY, SELL, or HOLD.  
 2. Use both **fundamental portfolio data** (profit/loss %, diversification, sector exposure) and **technical indicators** (RSI, EMA crossovers, MACD, Bollinger Bands) for your analysis.  
 3. If recommending SELL:  
-   - Suggest where to reinvest those funds (specific stock name/ticker from either holdings or positive_sentiment_stocks, with reasoning).  
+   - Suggest where to reinvest those funds (specific stock name/ticker from either holdings or any other, with reasoning).  
 4. If recommending BUY (adding more to an existing holding):  
    - Provide a suggested buy price range using support/resistance from technicals.  
 5. If recommending HOLD:  
    - Explain why the stock should be held, considering momentum, sector, or fundamentals.  
-6. Additionally, from **positive_sentiment_stocks_from_news_analysis**, suggest top 3 with highest confidence **swing trading recommendations** for short-term gains (expected 5–10% in 1–2 months). For each swing trade:  
-   - Provide ticker name  
-   - Suggested buy price range  
-   - Reason for short-term trade (technical setup, sector momentum, support/resistance, MACD/RSI signals, and safety factors like low volatility or trend strength)  
-
 Final Output:  
 Return the analysis strictly in the following JSON format, with no additional text or explanations, and do not use Markdown or ```json blocks:  
 {
@@ -41,14 +32,6 @@ Return the analysis strictly in the following JSON format, with no additional te
       "final_decision": "BUY/SELL/HOLD",
       "confidence": "0-100%",
       "reason": "Why this decision was made (with insights from fundamentals, technicals, and sentiment). If recommending SELL, suggest fund relocation target."
-    }
-  ],
-  "swing_trade_stocks": [
-    {
-      "ticker": "SWING_TICKER",
-      "confidence": "0-100%",
-      "BUY_PRICE": "Suggested entry price range e.g., (xxx - yyy)",
-      "reason": "Technical/sector/fundamental setup for expected 5-10% short-term gain, with risk/safety factors explained."
     }
   ]
 }

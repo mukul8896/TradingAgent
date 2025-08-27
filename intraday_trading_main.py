@@ -7,7 +7,7 @@ import os
 import sys
 import json
 from chartink.chartink_scanner import stocks_scanner
-from chartink.chartink_queries import MONTHLY_SWING_QUERY
+from chartink.chartink_queries import MONTHLY_SWING_RSI_60_QUERY
 from notification.telegram_msg import send_to_telegram
 from prompts.intraday_prompt import INTRADAY_STOCK_PROMPT
 from inidcators.indicator_utils import enriched_json_with_indicators
@@ -25,7 +25,7 @@ async def main():
     smartApiActions = SmartApiActions()
     
     try:
-        scan_data = stocks_scanner(MONTHLY_SWING_QUERY)
+        scan_data = stocks_scanner(MONTHLY_SWING_RSI_60_QUERY)
         print(f"INFO : Intraday Tickers at {dt.datetime.now().hour}:{dt.datetime.now().minute}:\n{[item['tradingsymbol'] for item in scan_data]}")
         scan_data = enriched_json_with_indicators(scan_data,"ONE_DAY",smartApiActions)
         scan_data = enriched_json_with_indicators(scan_data,"ONE_HOUR",smartApiActions)

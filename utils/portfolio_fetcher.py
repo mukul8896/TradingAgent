@@ -2,12 +2,14 @@
 from smartapi.SmartApiActions import SmartApiActions
 from inidcators.indicator_utils import enriched_json_with_indicators
 import json
+from utils.news_fetcher import fetch_all_stock_news
 import pandas as pd
 
-def simplify_holdings_json(data, news_data):
+def simplify_holdings_json(data):
     """Reduce holding JSON to only essential fields and enrich with news data if available.
     Also return cleaned news_data (excluding stocks already in holdings or merged).
     """
+    news_data = fetch_all_stock_news()
     required_keys = [
         "tradingsymbol", "quantity", "averageprice",
         "ltp", "profitandloss", "pnlpercentage"
@@ -16,7 +18,7 @@ def simplify_holdings_json(data, news_data):
     # Convert news_data into a lookup dictionary {tradingsymbol: {...news...}}
     news_lookup = {n["tradingsymbol"]: n for n in news_data}
 
-    simplified = {
+    simplified_holding_json = {
         "current_holdings": [],
         "totalholding": {
             "totalholdingvalue": data.get("totalholding", {}).get("totalholdingvalue", 0),
@@ -25,8 +27,6 @@ def simplify_holdings_json(data, news_data):
             "totalpnlpercentage": data.get("totalholding", {}).get("totalpnlpercentage", 0),
         }
     }
-
-    used_tickers = set()
 
     for h in data.get("holdings", []):
         holding_entry = {k: h.get(k, 0 if k != "tradingsymbol" else "") for k in required_keys}
@@ -37,20 +37,15 @@ def simplify_holdings_json(data, news_data):
             news_item = news_lookup[ticker]
             holding_entry["news_headline"] = news_item.get("new_headline", "")
             holding_entry["sentiment"] = news_item.get("sentiment", "")
-            used_tickers.add(ticker)
 
-        simplified["current_holdings"].append(holding_entry)
-        used_tickers.add(ticker)
+        simplified_holding_json["current_holdings"].append(holding_entry)
 
-    # Remove news items for tickers already in holdings or merged
-    cleaned_news = [n for n in news_data if n["tradingsymbol"] not in used_tickers]
-
-    return simplified, cleaned_news
+    return simplified_holding_json
 
 
-def get_portfolio_stocks(smartApiActions,news_data):
+def get_portfolio_stocks(smartApiActions):
     """Fetch company names of holdings from Angel One SmartAPI."""
     response = smartApiActions.getAllHoldings()  # JSON response
-    simplify_holdings_data,other_hot_news = simplify_holdings_json(response,news_data)
+    simplify_holdings_data = simplify_holdings_json(response)
     simplify_holdings_data['current_holdings'] = enriched_json_with_indicators(simplify_holdings_data['current_holdings'],"ONE_DAY",smartApiActions)
-    return simplify_holdings_data,other_hot_news
+    return simplify_holdings_data

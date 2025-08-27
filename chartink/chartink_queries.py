@@ -5,7 +5,10 @@
 GOLDEN_CROSS_OVER_DAILY = {"scan_clause" : "( {cash} ( latest sma( latest close , 50 ) > latest sma( latest close , 200 ) and 1 day ago  sma( latest close , 50 )<= 1 day ago  sma( latest close , 200 ) and 1 day ago sma( latest close , 50 ) <= 1 day ago sma( latest close , 200 ) and latest volume > 50000 ) )"}
 
 
-MONTHLY_SWING_QUERY = {"scan_clause" : "( {46553} ( monthly high > 1 month ago high and 1 month ago high > 2 months ago high and 2 months ago high > 3 months ago high and monthly low > 1 month ago low and 1 month ago low > 2 months ago low and 2 months ago low > 3 months ago low and monthly close > 1 month ago close and 1 month ago close > 2 months ago close and 2 months ago close > 3 months ago close and monthly close > monthly high * 0.618 and latest rsi( 14 ) > 60 ) )"}
+MONTHLY_SWING_RSI_60_QUERY = {"scan_clause" : "( {46553} ( monthly high > 1 month ago high and 1 month ago high > 2 months ago high and 2 months ago high > 3 months ago high and monthly low > 1 month ago low and 1 month ago low > 2 months ago low and 2 months ago low > 3 months ago low and monthly close > 1 month ago close and 1 month ago close > 2 months ago close and 2 months ago close > 3 months ago close and monthly close > monthly high * 0.618 and latest rsi( 14 ) > 60 ) )"}
+
+
+MONTHLY_SWING_QUERY = {"scan_clause" : "( {57960} ( monthly high > 1 month ago high and 1 month ago high > 2 months ago high and 2 months ago high > 3 months ago high and monthly low > 1 month ago low and 1 month ago low > 2 months ago low and 2 months ago low > 3 months ago low and monthly close > 1 month ago close and 1 month ago close > 2 months ago close and 2 months ago close > 3 months ago close and monthly close > monthly high * 0.618 ) )"}
 
 
 OPEN_LOW_SAME_QUERY = {"scan_clause" : "( {57960} ( latest open = latest low and latest open > 1 day ago close * 1.01 and latest close >= ( latest open * 1.01 ) ) )"}
