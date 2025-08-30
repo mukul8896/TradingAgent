@@ -18,3 +18,4 @@ langchain-core
 langchain-community
 #post generator
 pillow
+cairosvg
