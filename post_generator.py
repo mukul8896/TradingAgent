@@ -118,14 +118,10 @@ def create_quote_post(quote, output_dir="posts", logo_path="logos/ai_robo_logo.p
 
 
 if __name__ == "__main__":
-    # print("INFO: Generating Quote...")
-    # quote = call_llm_text_output(QUOTES_PROMPT)
-    # print(f"INFO: {quote}")
-
-    quote = """You think you need clarity, but you're avoiding the decision.
-No one is coming to fix it, including future you.
-{Action beats intention, every boring day.}"""
+    print("INFO: Generating Quote...")
+    quote = call_llm_text_output(QUOTES_PROMPT)
+    print(f"INFO: {quote}")
 
     # Generate post with highlighted impactful line and logo
     filename = create_quote_post(quote)
-    # send_image_to_telegram(f"{filename}", "Your Insta Post")
+    send_image_to_telegram(f"{filename}", "Your Insta Post")
