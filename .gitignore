@@ -167,3 +167,4 @@ order_data/
 *.swp
 key.txt
 trade_logs/*.log
+posts/*.png
