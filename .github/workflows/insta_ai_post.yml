@@ -2,7 +2,8 @@ name: Daily Swing Scanner
 
 on:
   schedule:
-    - cron: "0 4 * * 1-5"   # Runs every day at 9:30 AM IST
+    # Runs every hour from 9 PM to 1 AM IST (16–19 UTC), all 7 days
+    - cron: "0 16-19 * * *"
   workflow_dispatch:       # Keep manual trigger, but no inputs
 
 jobs:
@@ -33,4 +34,4 @@ jobs:
           SMART_API_TOTP: ${{ secrets.SMART_API_TOTP }}
           TELEGRAM_BOT_CHAT_ID: ${{ secrets.TELEGRAM_BOT_CHAT_ID }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        run: python daily_scan.py
+        run: python post_generator.py

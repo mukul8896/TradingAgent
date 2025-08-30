@@ -16,3 +16,5 @@ nsepython
 langchain
 langchain-core
 langchain-community
+#post generator
+pillow

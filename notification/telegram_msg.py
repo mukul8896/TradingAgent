@@ -1,5 +1,6 @@
 import telegram
 import os
+import requests
 
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -22,6 +23,23 @@ async def send_to_telegram(bot: telegram.Bot, message: str):
 
 def fmt_price(val):
     return "N/A" if val in (None, "", "null") else str(val)
+
+
+def send_image_to_telegram(image_path, caption='Your image post is ready!'):
+    """
+    Sends an image file to a specified Telegram chat.
+    """
+    url = f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto'
+    with open(image_path, 'rb') as image_file:
+        files = {'photo': image_file}
+        data = {'chat_id': TELEGRAM_CHAT_ID, 'caption': caption}
+        
+        try:
+            response = requests.post(url, files=files, data=data)
+            response.raise_for_status()  # Raise an exception for bad status codes
+            print("Image sent to Telegram successfully!")
+        except requests.exceptions.RequestException as e:
+            print(f"Failed to send image: {e}")
 
 async def send_portfolio_analysis(bot: telegram.Bot, analysis_json: dict):
     """Send formatted portfolio analysis according to the strict JSON schema."""

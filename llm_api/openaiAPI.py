@@ -8,10 +8,10 @@ MODEL = os.getenv("MODEL_ID", MODEL_ID)
 
 def call_llm(prompt, data):
     """Call the LLM with a structured prompt and return parsed JSON dict."""
-    full_prompt = f"{prompt}\n\nData:\n{json.dumps(data, indent=1)}"
+    prompt = f"{prompt}\n\nData:\n{json.dumps(data, indent=1)}"
     resp = openai.chat.completions.create(
         model=os.getenv("MODEL_ID", MODEL_ID),
-        messages=[{"role": "user", "content": full_prompt}],
+        messages=[{"role": "user", "content": prompt}],
     )
     content = resp.choices[0].message.content or ""
 
@@ -31,3 +31,13 @@ def call_llm(prompt, data):
             except Exception:
                 pass
         raise RuntimeError(f"LLM did not return valid JSON: {e}\nRaw:\n{content}")
+    
+def call_llm_text_output(prompt):
+    resp = openai.chat.completions.create(
+        model=os.getenv("MODEL_ID", MODEL_ID),
+        messages=[{"role": "user", "content": prompt}],
+    )
+    content = resp.choices[0].message.content or ""
+    return content
+
+    
