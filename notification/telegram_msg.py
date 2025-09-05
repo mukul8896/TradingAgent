@@ -3,7 +3,6 @@ import os
 import requests
 
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_MAX_LEN = 4096  # Telegram hard cap
 
 def split_for_telegram(text: str, chunk_size: int = TELEGRAM_MAX_LEN):
@@ -25,11 +24,11 @@ def fmt_price(val):
     return "N/A" if val in (None, "", "null") else str(val)
 
 
-def send_image_to_telegram(image_path, caption='Your image post is ready!'):
+def send_image_to_telegram(image_path, caption='Your image post is ready!',token=None):
     """
     Sends an image file to a specified Telegram chat.
     """
-    url = f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto'
+    url = f'https://api.telegram.org/bot{token}/sendPhoto'
     with open(image_path, 'rb') as image_file:
         files = {'photo': image_file}
         data = {'chat_id': TELEGRAM_CHAT_ID, 'caption': caption}

@@ -88,7 +88,7 @@ def get_rsi_cross_over(interval,scan_data,smartApiActions):
             df = calculate_indicators(df,interval)
             latest = df.iloc[-1]
             previous_day = df.iloc[-2]
-            if round(latest["RSI"],2) > 50 and round(previous_day["RSI"],2) < 50:
+            if round(latest["RSI"],2) > 60 and round(previous_day["RSI"],2) < 60:
                 crossed_rsi_ticker.append(ticker)
     return [{"tradingsymbol": x} for x in crossed_rsi_ticker]
 

@@ -15,9 +15,9 @@ def create_quote_post(quote, output_dir="posts", logo_path="logos/ai_robo_logo.p
     draw = ImageDraw.Draw(img)
 
     # --- Fonts ---
-    font_normal_path = "fonts/Lato-Regular.ttf"
-    font_bold_path = "fonts/Lato-Bold.ttf"
-    font_watermark_path = "fonts/Lato-Italic.ttf"
+    font_normal_path = "fonts/Lato/Lato-Regular.ttf"
+    font_bold_path = "fonts/Lato/Lato-Bold.ttf"
+    font_watermark_path = "fonts/Lato/Lato-Italic.ttf"
 
     font_size = 42
     font_normal = ImageFont.truetype(font_normal_path, font_size)
@@ -111,4 +111,4 @@ if __name__ == "__main__":
     print(f"INFO: {quote}")
 
     filename = create_quote_post(quote)
-    send_image_to_telegram(f"{filename}", "Your Insta Post")
+    send_image_to_telegram(f"{filename}", "Your Insta Post",os.getenv("TELEGRAM_QUOTEBOT_TOKEN"))

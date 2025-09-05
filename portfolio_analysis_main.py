@@ -18,7 +18,7 @@ if sys.platform.startswith("win"):
 
 async def main():
     # Create bot inside the running loop and ensure graceful cleanup
-    bot = telegram.Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
+    bot = telegram.Bot(token=os.getenv("TELEGRAM_MARKETBOT_TOKEN"))
     # Initialize SmartAPI session
     smartApiActions = SmartApiActions()
     try:

@@ -40,4 +40,23 @@ def call_llm_text_output(prompt):
     content = resp.choices[0].message.content or ""
     return content
 
+def call_llm_with_web_tool(PROMPT,news_item):
+    resp = openai.chat.completions.create(
+        model=os.getenv("MODEL_ID", "gpt-5"),   # fallback to gpt-5
+        messages=[
+            {
+                "role": "system",
+                "content": (PROMPT)
+            },
+            {
+                "role": "user",
+                "content": json.dumps(news_item)
+            }
+        ],
+        tools=[{"type": "browse_web"}],  # enable browsing tool
+    )
+    
+    content = resp.choices[0].message.get("content", "")
+    return content
+
     

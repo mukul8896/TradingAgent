@@ -2,9 +2,11 @@
 import requests
 import time
 import os
+import json
 from config import NEWS_API_URL,TRADIENT_NEWS_URL
 from datetime import datetime, timedelta
 from inidcators.indicator_utils import enriched_json_with_indicators
+from bs4 import BeautifulSoup
 
 def fetch_all_stock_news():
     """
@@ -101,6 +103,32 @@ def fetch_positive_stock_news(news_data=None):
         })   
     return summarized_news
 
+import requests
+from bs4 import BeautifulSoup
+
+def fetch_article_text(url):
+    try:
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()  # raise error for bad status codes (4xx, 5xx)
+        
+        soup = BeautifulSoup(resp.text, "html.parser")
+        paragraphs = [p.get_text() for p in soup.find_all("p")]
+        article_text = "\n".join(paragraphs).strip()
+        
+        if not article_text:
+            return "⚠️ No readable article content found."
+        
+        return article_text
+
+    except requests.exceptions.RequestException as e:
+        # handles connection errors, timeouts, invalid URL, etc.
+        return f"⚠️ Failed to fetch article: RequestException"
+    except Exception as e:
+        # any other unexpected errors
+        return f"⚠️ Unexpected error while parsing article: Got an Exception"
+
+
+
 def fetch_newapi_articles(query=None):
     """
     Fetch news for portfolio companies + COMPANY_NAMES or general Indian market if portfolio_companies is None.
@@ -108,33 +136,24 @@ def fetch_newapi_articles(query=None):
     """
     all_articles = []
 
-    # If portfolio_companies is None, fetch general Indian market news
-    if query == None:
-        query = """
-                    (indian stock market OR indian stocks OR Sensex OR Nifty OR NSE OR BSE OR "Indian economy")
-                    AND (earnings OR "quarterly results" OR profit OR revenue OR loss OR "net income"
-                    OR dividend OR IPO OR "share buyback" OR merger OR acquisition OR "capital expenditure"
-                    OR "expansion plans" OR "market trend" OR "investor sentiment" OR bullish OR bearish OR correction)
-                """
     params = {
         "q": query,
         "language": "en",
-        "from": (datetime.utcnow() - timedelta(days=2)).strftime("%Y-%m-%d"),
+        "from": (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d"),
         "sortBy": "publishedAt",
         "apiKey": os.getenv("NEWS_API_KEY")
     }
     response = requests.get(NEWS_API_URL, params=params)
     data = response.json()
-
     if data.get("status") != "ok":
         print(f"Error fetching general market news: {data}")
     else:
         for article in data.get("articles", []):
             all_articles.append({
-                "companyName": None,  # General market news
                 "title": article.get("title"),
                 "description": article.get("description"),
-                "url": article.get("url"),
+                "article_text": fetch_article_text(article.get("url")),
+                "urlToImage": article.get("urlToImage"),
                 "source": article.get("source", {}).get("name"),
                 "publishedAt": article.get("publishedAt")
             })
