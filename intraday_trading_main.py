@@ -20,7 +20,7 @@ if sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 async def main():
-    bot = telegram.Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
+    bot = telegram.Bot(token=os.getenv("TELEGRAM_MARKETBOT_TOKEN"))
     # Initialize SmartAPI session
     smartApiActions = SmartApiActions()
     

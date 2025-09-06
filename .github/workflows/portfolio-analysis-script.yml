@@ -2,7 +2,7 @@ name: Portfolio Analysis
 
 on:
   schedule:
-    - cron: "0 4 * * 1"   # Runs every Monday at 9:30 AM IST
+    - cron: "0 4 * * 1,3,5"   # Runs every Monday at 9:30 AM IST
   workflow_dispatch:
     inputs:
       model_id:
@@ -38,5 +38,7 @@ jobs:
           SMART_API_PASSWORD: ${{ secrets.SMART_API_PASSWORD }}
           SMART_API_TOTP: ${{ secrets.SMART_API_TOTP }}
           TELEGRAM_BOT_CHAT_ID: ${{ secrets.TELEGRAM_BOT_CHAT_ID }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_MARKETBOT_TOKEN: ${{ secrets.TELEGRAM_MARKETBOT_TOKEN }}
+          TELEGRAM_NEWSBOT_TOKEN: ${{ secrets.TELEGRAM_NEWSBOT_TOKEN }}
+          TELEGRAM_QUOTEBOT_TOKEN: ${{ secrets.TELEGRAM_QUOTEBOT_TOKEN }}
         run: python portfolio_analysis_main.py

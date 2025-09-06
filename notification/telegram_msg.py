@@ -62,16 +62,16 @@ async def send_portfolio_analysis(bot: telegram.Bot, analysis_json: dict):
             )
         await send_to_telegram(bot, msg)
 
-    # # 2) Long-term ideas
-    # long_term = analysis_json.get("long_term_stocks", [])
-    # if long_term:
-    #     msg_lines = ["🌟 *Long-Term Hot Stocks:*"]
-    #     for s in long_term:
-    #         msg_lines.append(
-    #             f"\n*{s.get('ticker','')}* at {fmt_price(s.get('BUY_PRICE'))}\n"
-    #             f"Reason: {s.get('reason','')}"
-    #         )
-    #     await send_to_telegram(bot, "\n".join(msg_lines))
+    # 2) Additional Ideas
+    long_term = analysis_json.get("etf_recommendations", [])
+    if long_term:
+        msg_lines = ["🌟 *ETF Allocation Recommendation:*"]
+        for s in long_term:
+            msg_lines.append(
+                f"\n*{s.get('etf_name','')}* at {fmt_price(s.get('amount'))}\n"
+                f"Reason: {s.get('reason','')}"
+            )
+        await send_to_telegram(bot, "\n".join(msg_lines))
 
     # 3) Swing trades
     swings = analysis_json.get("top_5_swing_trade_stocks", []) or \

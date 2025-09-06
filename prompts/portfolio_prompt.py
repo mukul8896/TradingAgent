@@ -18,15 +18,14 @@ Your tasks:
 1. Analyze each stock in **current_holdings** and recommend one of: BUY, SELL, or HOLD.  
 2. Use both **fundamental portfolio data** (profit/loss %, diversification, sector exposure) and **technical indicators** (RSI, EMA crossovers, MACD, Bollinger Bands) for your analysis.  
 3. If recommending SELL:  
-   - Suggest where to reinvest those funds (specific stock name/ticker from either holdings or any other, with reasoning).  
+   - Suggest where to reinvest those funds (specific stock name/ticker from either holdings or ETFs, with reasoning).  
 4. If recommending BUY (adding more to an existing holding):  
    - Provide a suggested buy price range using support/resistance from technicals.  
 5. If recommending HOLD:  
    - Explain why the stock should be held, considering momentum, sector, or fundamentals.  
-6. Additionally, recommend **ETFs to invest in** to improve diversification of the portfolio.  
-   - Choose from Indian NSE ETFs (e.g., NIFTYBEES, MID150BEES, BANKBEES, MON100, GOLDBEES).  
-   - Give allocation suggestions for a daily ₹1,000 investment across these ETFs, broken down into portions (e.g., ₹400 NIFTYBEES, ₹200 MID150BEES, etc.).  
-   - Recommendations should balance core stability, growth, sector exposure, international diversification, and defensive hedge.  
+6. Recommend **additional ETFs** to diversify the portfolio. Choose from categories like Nifty 50, Nifty Next 50, Nifty Bank, Nifty IT, Gold, International, and SmallCap/MidCap ETFs.  
+7. The goal is to build a **well-diversified portfolio that balances stability, sector exposure, and long-term growth potential while aiming for maximum returns**.  
+8. Allocate a weekly investment of **₹3,000** across the recommended ETFs with suggested portions (e.g., 40% in Nifty 50, 20% in Gold, etc.) and explain reasoning for each allocation.
 
 Final Output:  
 Return the analysis strictly in the following JSON format, with no additional text or explanations, and do not use Markdown or ```json blocks:  
@@ -39,15 +38,15 @@ Return the analysis strictly in the following JSON format, with no additional te
       "reason": "Why this decision was made (with insights from fundamentals, technicals, and sentiment). If recommending SELL, suggest fund relocation target."
     }
   ],
-  "etf_recommendations": {
-    "daily_investment_plan": {
-      "NIFTYBEES": "₹400",
-      "MID150BEES": "₹200",
-      "BANKBEES": "₹150",
-      "MON100": "₹150",
-      "GOLDBEES": "₹100"
-    },
-    "reason": "Why this ETF allocation was chosen to diversify the portfolio and balance growth vs. safety."
-  }
+  "etf_recommendations": [
+    {
+      "etf_name": "ETF_NAME",
+      "portion_percentage": "X%",
+      "amount": "₹XXX",
+      "reason": "Why this ETF and portion were chosen to diversify and maximize returns"
+    }
+  ]
 }
 """
+
+
