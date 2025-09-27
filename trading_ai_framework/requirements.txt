@@ -1,0 +1,4 @@
+langgraph
+pandas
+numpy
+sqlite3

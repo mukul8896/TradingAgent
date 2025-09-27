@@ -12,10 +12,21 @@ lxml
 python-telegram-bot
 nsetools
 nsepython
+
 # LangChain ecosystem
 langchain
 langchain-core
 langchain-community
-#post generator
+langsmith
+prometheus-client
+structlog
+pyyaml
+croniter
+tenacity
+redis
+sqlalchemy
+psycopg2-binary==2.9.9
+
+# Post generator
 pillow
 cairosvg

@@ -1,8 +1,7 @@
 import telegram
 import os
 import requests
-
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
+from config import *
 TELEGRAM_MAX_LEN = 4096  # Telegram hard cap
 
 def split_for_telegram(text: str, chunk_size: int = TELEGRAM_MAX_LEN):
@@ -46,12 +45,10 @@ async def send_portfolio_analysis(bot: telegram.Bot, analysis_json: dict):
     portfolio_analysis = analysis_json.get("portfolio_analysis", [])
     for holding in portfolio_analysis:
         msg = (
-            f"📌 *{holding.get('ticker','')}*\n"
+            f"📌 *{holding.get('tradingsymbol','')}*\n"
             f"Decision: {holding.get('final_decision','')} "
             f"({holding.get('confidence','')} confident)\n"
             f"Reason: {holding.get('reason','')}\n"
-            f"Exit Price: {fmt_price(holding.get('EXIT_PRICE'))}\n"
-            f"Buy Price: {fmt_price(holding.get('BUY_PRICE'))}\n"
         )
         relocate = holding.get("relocate_fund_to")
         if relocate:
@@ -62,26 +59,34 @@ async def send_portfolio_analysis(bot: telegram.Bot, analysis_json: dict):
             )
         await send_to_telegram(bot, msg)
 
-    # 2) Additional Ideas
-    long_term = analysis_json.get("etf_recommendations", [])
-    if long_term:
-        msg_lines = ["🌟 *ETF Allocation Recommendation:*"]
-        for s in long_term:
-            msg_lines.append(
-                f"\n*{s.get('etf_name','')}* at {fmt_price(s.get('amount'))}\n"
-                f"Reason: {s.get('reason','')}"
-            )
-        await send_to_telegram(bot, "\n".join(msg_lines))
+async def send_watchlist_analysis(bot: telegram.Bot, analysis_json: dict):
+    """Send formatted watchlist analysis according to the strict JSON schema."""
+    # 1) Per-holding analysis
+    portfolio_analysis = analysis_json.get("top_swing_trades", [])
+    for holding in portfolio_analysis:
+        msg = (
+            f"📌 *{holding.get('tradingsymbol','')}*\n"
+            f"Entry Range: {holding.get('entry_range','')}\n"
+            f"Stop Loss: {holding.get('stop_loss','')}\n"
+            f"Targets: {holding.get('targets','')}\n"
+            f"Risk Rewards: {holding.get('risk_reward','')}\n"
+            f"Holding Period: {holding.get('holding_period','')}\n"
+            f"({holding.get('confidence','')} confident)\n"
+            f"Reason: {holding.get('reason','')}\n"
+        )
+        await send_to_telegram(bot, msg)
 
-    # 3) Swing trades
-    swings = analysis_json.get("top_5_swing_trade_stocks", []) or \
-             analysis_json.get("swing_trade_stocks", [])
-    if swings:
-        msg_lines = ["⚡ *Safe Swing Trades:*"]
-        for s in swings:
-            msg_lines.append(
-                f"\n*{s.get('ticker','')}* at {fmt_price(s.get('BUY_PRICE'))}\n"
-                f"({s.get('confidence','')} confident)\n"
-                f"Reason: {s.get('reason','')}"
-            )
-        await send_to_telegram(bot, "\n".join(msg_lines))
+def notify_order_status(bot,response):
+    if response is not None and type(response) is dict:
+        if response.get("status") is False:
+            print(f"ERROR : Order Failed: {response['message']}")
+            send_to_telegram(bot=bot,message=f"ERROR : Order Failed: {response['message']}")
+        elif response.get("status") is True:
+            print(f"INFO : Order Success: {response}")
+            send_to_telegram(bot=bot,message=f"INFO : Order Success: {response}")
+    elif response is not None and type(response) is str:
+        print(f"INFO : Order placed {response}")
+        send_to_telegram(bot=bot,message=f"INFO : Order placed {response}")
+    else:
+        print(f"ERROR : Order Failed: {response}")
+        send_to_telegram(bot=bot,message=f"ERROR : Order Failed: {response}")

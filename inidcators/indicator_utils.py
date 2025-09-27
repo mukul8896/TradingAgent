@@ -109,6 +109,8 @@ def enriched_json_with_indicators(json_data,interval,smartApiActions):
         )
         if df is not None and not df.empty and len(df) >= 100:
             df = calculate_indicators(df,interval)
+            numeric_cols = df.select_dtypes(include=['float', 'int']).columns
+            df[numeric_cols] = df[numeric_cols].round(2)
             latest = df.iloc[-1]
             indicators_data = {}
             if indicators_data.get("ltp") is None:
@@ -127,7 +129,12 @@ def enriched_json_with_indicators(json_data,interval,smartApiActions):
             indicators_data["MACD_signal"] = round(latest["MACD_signal"],2)
             indicators_data["bollinger_upper"] = round(latest["bollinger_upper"],2)
             indicators_data["bollinger_lower"] = round(latest["bollinger_lower"],2)
-            stock[interval+"_INTERVAL"] = indicators_data   
+            stock[interval+"_INTERVAL_LATEST"] = indicators_data
+            # df_reset = df.reset_index()
+            # df_reset['date'] = df_reset['date'].dt.strftime('%Y-%m-%d')
+            # df_last100 = df_reset.tail(50)
+            # historical_json = df_last100.to_dict(orient="records")
+            # stock["historical_100_days_data"] = historical_json   
             enriched_data.append(stock)
     
     return enriched_data

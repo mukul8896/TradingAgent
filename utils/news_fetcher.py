@@ -3,16 +3,27 @@ import requests
 import time
 import os
 import json
-from config import NEWS_API_URL,TRADIENT_NEWS_URL
 from datetime import datetime, timedelta
 from inidcators.indicator_utils import enriched_json_with_indicators
 from bs4 import BeautifulSoup
+import requests
+from datetime import datetime, timedelta
+from config import *
 
-def fetch_all_stock_news():
+def fetch_market_news(category: str = None, sentiment: str = None, stock_name: str = None, days: int = 0, hours: int = 0):
     """
-    Fetches latest stock-specific NSE/BSE news from Tradient API.
-    Only includes items where sm_symbol is non-empty and not 'global'.
-    Returns a compact list suitable for LLM input.
+    Fetches latest stock/sector/global news from Tradient API.
+    Filters by:
+      - category (e.g. "stock", "sectoral", "global")
+      - sentiment (e.g. "positive", "negative", "neutral")
+      - last N days (default 0)
+      - last N hours (default 0)
+
+    Returns compact list with only:
+    - text
+    - overall_sentiment
+    - sm_symbol
+    - sm_symbol_name
     """
     try:
         response = requests.get(TRADIENT_NEWS_URL, timeout=10)
@@ -22,89 +33,41 @@ def fetch_all_stock_news():
         print(f"Error fetching news: {e}")
         return []
 
-    summarized_news = []
+    # Compute cutoff time
+    cutoff_time = datetime.utcnow() - timedelta(days=days, hours=hours)
+
+    filtered_news = []
     for item in data:
-        sm_symbol = item.get("sm_symbol", "").strip()
-        nse_scrip_code = str(item.get("nse_scrip_code", "")).strip()
-        bse_scrip_code = str(item.get("bse_scrip_code", "")).strip()
-        if (not sm_symbol or ((not nse_scrip_code or str(nse_scrip_code).strip() == "0") and (not bse_scrip_code or str(bse_scrip_code).strip() == "0"))):
+        sm_symbol = (item.get("sm_symbol") or "").strip()
+        news_obj = item.get("news_object") or {}
+        overall_sentiment = (news_obj.get("overall_sentiment") or "").lower()
+        news_category = (item.get("category") or "").lower()
+        metadata = item.get("metadata") or {}
+        publish_ts = item.get("publish_date") or 0
+        publish_dt = datetime.fromtimestamp(publish_ts / 1000) if publish_ts else None
+
+        # Apply filters
+        if category and category!="all" and news_category != category.lower():
             continue
+        if sentiment and sentiment!="all" and overall_sentiment != sentiment.lower():
+            continue
+        if publish_dt and publish_dt < cutoff_time:
+            continue
+        if stock_name is not None:
+            filtered_news.append({
+                "text": (news_obj.get("text") or ""),  # truncate for LLM safety
+                "sentiment": overall_sentiment,
+                "tradingsymbol": f"{sm_symbol}",
+                "sm_symbol_name": metadata.get("sm_symbol_name", "")
+            })
+        else:
+            filtered_news.append({
+            "text": (news_obj.get("text") or ""),  # truncate for LLM safety
+            "sentiment": overall_sentiment,
+            "tradingsymbol": f"{sm_symbol}"
+        })
 
-        news = item.get("news_object", {})
-        title = news.get("title", "")[:200]   # limit title length
-        summary = news.get("text", "")[:1000]  # limit summary length
-        sentiment = news.get("overall_sentiment", "")
-        publish_ts = item.get("publish_date", 0)
-        publish_dt = datetime.fromtimestamp(publish_ts / 1000).strftime("%Y-%m-%d %H:%M:%S") if publish_ts else ""
-
-        summarized_news.append({
-            "tradingsymbol": sm_symbol,
-            "new_headline": title,
-            "sentiment": sentiment,
-            # "summary": summary,
-            "publish_dt":publish_dt,
-            "publish_ts":publish_ts,
-        }) 
-    return summarized_news
-
-def fetch_positive_stock_news(news_data=None):
-    """
-    Fetches latest stock-specific NSE/BSE news from Tradient API.
-    Only includes items where sm_symbol is non-empty and not 'global'.
-    Returns a compact list suitable for LLM input.
-    """
-    if news_data == None:
-        try:
-            response = requests.get(TRADIENT_NEWS_URL, timeout=10)
-            response.raise_for_status()
-            news_data = response.json().get("data", {}).get("latest_news", [])
-            summarized_news = []
-            for item in news_data:
-                sm_symbol = item.get("sm_symbol", "").strip()
-                nse_scrip_code = str(item.get("nse_scrip_code", "")).strip()
-                bse_scrip_code = str(item.get("bse_scrip_code", "")).strip()
-                if (not sm_symbol or ((not nse_scrip_code or str(nse_scrip_code).strip() == "0") and (not bse_scrip_code or str(bse_scrip_code).strip() == "0"))):
-                    continue # skip non-stock news         
-                news = item.get("news_object", {})
-                title = news.get("title", "")[:200]   # limit title length
-                summary = news.get("text", "")[:1000]  # limit summary length
-                sentiment = news.get("overall_sentiment", "neutral")
-                if sentiment.lower() == "negative" or sentiment.lower() == "neutral":
-                    continue 
-                publish_ts = item.get("publish_date", 0)
-                publish_dt = datetime.fromtimestamp(publish_ts / 1000).strftime("%Y-%m-%d %H:%M:%S") if publish_ts else ""
-
-                summarized_news.append({
-                    "tradingsymbol": sm_symbol,
-                    "new_headline": title,
-                    "sentiment": sentiment,
-                    # "summary": summary,
-                    #"publish_dt":publish_dt,
-                    #"publish_ts":publish_ts,
-                })
-            return summarized_news
-        except Exception as e:
-            print(f"Error fetching news: {e}")
-            return []
-
-    summarized_news = []
-    for item in news_data:
-        tradingsymbol = item.get("tradingsymbol", "").strip()
-        sentiment = item.get("sentiment", "").strip()
-        new_headline = item.get("new_headline", "")[:200]   # limit title length
-
-        if sentiment.lower() == "negative" or sentiment.lower() == "neutral":
-            continue  # skip non-stock news
-
-        summarized_news.append({
-            "tradingsymbol": tradingsymbol,
-            "new_headline": new_headline
-            # "summary": summary
-        })   
-    return summarized_news
-
-import requests
-from bs4 import BeautifulSoup
+    return filtered_news
 
 def fetch_article_text(url):
     try:
@@ -141,7 +104,7 @@ def fetch_newapi_articles(query=None):
         "language": "en",
         "from": (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d"),
         "sortBy": "publishedAt",
-        "apiKey": os.getenv("NEWS_API_KEY")
+        "apiKey": NEWS_API_KEY
     }
     response = requests.get(NEWS_API_URL, params=params)
     data = response.json()

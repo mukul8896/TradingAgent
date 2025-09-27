@@ -13,11 +13,12 @@ import re
 from utils.commonutils import token_lookup,saveInstrumentList
 import os
 import requests, json
+from config import *
 class SmartApiActions:
     
     def __init__(self):
-        self.sessionObj = SmartConnect(api_key = os.getenv("SMART_API_KEY"))
-        self.session = self.sessionObj.generateSession(os.getenv("SMART_API_CLIENT_CODE"), os.getenv("SMART_API_PASSWORD"),TOTP(os.getenv("SMART_API_TOTP")).now())
+        self.sessionObj = SmartConnect(api_key = SMART_API_KEY)
+        self.session = self.sessionObj.generateSession(SMART_API_CLIENT_CODE, SMART_API_PASSWORD,TOTP(SMART_API_TOTP).now())
         saveInstrumentList()
         
         
@@ -70,39 +71,6 @@ class SmartApiActions:
                     }
         response = self.sessionObj.placeOrder(params)
         return response
-    
-    # def place_robo_limit_order(
-    #                             self, 
-    #                             ticker, 
-    #                             buy_sell, 
-    #                             price, 
-    #                             quantity, 
-    #                             squareoff, 
-    #                             stoploss, 
-    #                             trailing_sl,
-    #                             productType="INTRADAY", 
-    #                             exchange="NSE"
-    #                         ):
-    # # Get token and exchange from lookup
-    #     token, exchange = token_lookup(ticker)
-    #     params = {
-    #         "variety": "ROBO",                          # ROBO order
-    #         "tradingsymbol": "{}-EQ".format(ticker),    # Example: RELIANCE-EQ
-    #         "symboltoken": token,
-    #         "transactiontype": buy_sell,                # "BUY" / "SELL"
-    #         "exchange": exchange,
-    #         "ordertype": "LIMIT",                       # Entry at Limit Price
-    #         "producttype": productType,                 # INTRADAY / DELIVERY
-    #         "duration": "DAY",
-    #         "price": str(price),                        # Entry price
-    #         "quantity": str(quantity),
-    #         "squareoff": str(squareoff),                # Target difference
-    #         "stoploss": str(stoploss),                  # SL difference
-    #         "trailingStopLoss": str(trailing_sl)        # Trailing SL step
-    #     }
-
-    #     response = self.sessionObj.placeOrder(params)
-    #     return response
     
 
     def place_robo_order(self, 
@@ -195,7 +163,7 @@ class SmartApiActions:
         response = self.sessionObj.estimateCharges(params)
         return response["data"]["summary"]["total_charges"]
     
-    def place_market_order(self,ticker,buy_sell,quantity,productType="INTRADAY",exchange="NSE"):
+    def place_market_order(self,ticker,buy_sell,quantity,productType="DELIVERY",exchange="NSE"):
         token,exchange = token_lookup(ticker)
         params = {
                     "variety":"NORMAL",

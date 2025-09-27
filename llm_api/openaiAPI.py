@@ -1,14 +1,16 @@
 import os
 import json
 import openai
-from config import MODEL_ID
+from config import *
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = OPENAI_API_KEY
 MODEL = os.getenv("MODEL_ID", MODEL_ID)
 
-def call_llm(prompt, data):
+def call_llm(prompt, data1, data2=None):
     """Call the LLM with a structured prompt and return parsed JSON dict."""
-    prompt = f"{prompt}\n\nData:\n{json.dumps(data, indent=1)}"
+    prompt = f"{prompt}\n\nData:\n{json.dumps(data1, indent=1)}"
+    if data2 is not None:
+        prompt = f"{prompt}\n\nNews Data:\n{json.dumps(data2, indent=1)}"
     resp = openai.chat.completions.create(
         model=os.getenv("MODEL_ID", MODEL_ID),
         messages=[{"role": "user", "content": prompt}],

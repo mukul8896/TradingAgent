@@ -1,0 +1,1 @@
+# Trading AI Framework\n\nRun with:\n```bash\npython main.py\n```\n
