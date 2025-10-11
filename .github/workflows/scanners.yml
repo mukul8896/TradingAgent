@@ -35,4 +35,8 @@ jobs:
           TELEGRAM_MARKETBOT_TOKEN: ${{ secrets.TELEGRAM_MARKETBOT_TOKEN }}
           TELEGRAM_NEWSBOT_TOKEN: ${{ secrets.TELEGRAM_NEWSBOT_TOKEN }}
           TELEGRAM_QUOTEBOT_TOKEN: ${{ secrets.TELEGRAM_QUOTEBOT_TOKEN }}
+          SMART_API_CLIENT_CODE_NEW: ${{ secrets.SMART_API_CLIENT_CODE_NEW }}
+          SMART_API_KEY_NEW: ${{ secrets.SMART_API_KEY_NEW }}
+          SMART_API_PASSWORD_NEW: ${{ secrets.SMART_API_PASSWORD_NEW }}
+          SMART_API_TOTP_NEW: ${{ secrets.SMART_API_TOTP_NEW }}
         run: python daily_scan.py
