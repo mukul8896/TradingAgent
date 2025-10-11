@@ -7,7 +7,7 @@ import os
 import sys
 import json
 from chartink.chartink_scanner import stocks_scanner
-from chartink.chartink_queries import MONTHLY_SWING_RSI_60_QUERY,MONTHLY_SWING_QUERY
+from chartink.chartink_queries import MONTHLY_SWING_RSI_50_QUERY,MONTHLY_SWING_QUERY
 from notification.telegram_msg import send_to_telegram,notify_order_status
 from prompts.intraday_prompt import INTRADAY_STOCK_PROMPT
 from inidcators.indicator_utils import enriched_json_with_indicators
@@ -26,7 +26,7 @@ async def main():
     smartApiActions = SmartApiActions()
     
     try:
-        scan_data = stocks_scanner(MONTHLY_SWING_QUERY)
+        scan_data = stocks_scanner(MONTHLY_SWING_RSI_50_QUERY)
         print(f"INFO : Intraday Tickers at {dt.datetime.now().hour}:{dt.datetime.now().minute}:\n{[item['tradingsymbol'] for item in scan_data]}")
         scan_data = enriched_json_with_indicators(scan_data,"ONE_DAY",smartApiActions)
         scan_data = enriched_json_with_indicators(scan_data,"ONE_HOUR",smartApiActions)
@@ -42,12 +42,13 @@ async def main():
         if analysis.get("ticker") and analysis.get("direction") and analysis.get("ticker") != "N/A":
             response = None
             await send_to_telegram(bot=bot,message=json.dumps(analysis, indent=1))
-            print(f"INFO : Placing robo order for {analysis.get('ticker')} @ {analysis.get('entry_price')}")
+            print(f"INFO : Placing market order for {analysis.get('ticker')} @ {analysis.get('entry_price')}")
 
             response = smartApiActions.place_market_order(ticker= analysis.get("ticker"),
                             buy_sell= analysis.get("direction"),
                             quantity= analysis.get("qty", "1"),
                             productType="INTRADAY")
+            print(f"INFO : Order response: {response}")
             # notify_order_status(response)
         else:
             print("INFO : No valid trade recommendation from LLM (N/A).")

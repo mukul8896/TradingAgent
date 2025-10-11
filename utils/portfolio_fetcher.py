@@ -5,7 +5,7 @@ import json
 from utils.news_fetcher import fetch_market_news
 import pandas as pd
 from chartink.chartink_scanner import stocks_scanner
-from chartink.chartink_queries import MONTHLY_SWING_QUERY
+from chartink.chartink_queries import MONTHLY_SWING_RSI_50_QUERY
 
 def simplify_holdings_json(data,news_data):
     """Reduce holding JSON to only essential fields and enrich with news data if available.
@@ -53,7 +53,7 @@ def get_portfolio_stocks(news_data,smartApiActions):
 
 def get_watchlist_stocks(news_data,smartApiActions):
     """Create a watchlist JSON structure enriched with news if available."""
-    watchlist = stocks_scanner(MONTHLY_SWING_QUERY)
+    watchlist = stocks_scanner(MONTHLY_SWING_RSI_50_QUERY)
     news_lookup = {n["tradingsymbol"]: n for n in news_data}
     watchlist_json = []
 
