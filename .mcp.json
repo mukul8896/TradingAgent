@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "trading-agent": {
+      "command": "python",
+      "args": ["-m", "trading_mcp_server.server"],
+      "env": {
+        "TRADING_MCP_HOME": "${CLAUDE_PROJECT_DIR}"
+      }
+    }
+  }
+}

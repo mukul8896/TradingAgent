@@ -1,0 +1,63 @@
+# =====================================================================
+# TradingAgent application settings
+#
+# Two config layers:
+#   1. This file  — app-level choices: which agents are enabled, their
+#      default mode, and where the MCP server comes from.
+#   2. .env       — the runtime trading config ENFORCED by the MCP server
+#      (trading mode, permissions, risk limits, broker credentials).
+#      See .env.example. For safety switches, .env always wins.
+# =====================================================================
+
+trading:
+  default_mode: paper          # paper is the safe default; never change casually
+  allowed_modes:
+    - paper
+    - real                     # "real" maps to TRADING_MODE=live in .env and
+                               # additionally requires ALLOW_LIVE_TRADING=true there
+
+agents:
+  intraday:
+    enabled: true
+    mode: paper                # must stay paper until paper results prove profitable
+  swing:
+    enabled: true
+    mode: paper
+
+# =====================================================================
+# Execution routing — how an actionable signal is handled AFTER it has
+# passed every risk gate. This is an app-level preference the AGENT reads
+# and obeys; it does NOT relax any .env safety gate. Even with mode: auto,
+# no real order is possible unless .env has TRADING_MODE=live AND
+# ALLOW_LIVE_TRADING=true (and, for delivery, ALLOW_DELIVERY_BUY=true).
+#
+#   notify_only -> The agent does NOT place the order. It produces a
+#                  formatted "ACTION REQUIRED" recommendation and routes a
+#                  Telegram notification; the HUMAN places the order manually.
+#                  Use this while the broker static IP is not yet whitelisted.
+#
+#   auto        -> The agent places the order itself via the broker API
+#                  (still subject to the .env gates + manual-approval token).
+#                  Only switch to this once static-IP whitelisting is done.
+#
+# In PAPER mode this switch is moot: paper orders are always placed in the
+# simulator (place_paper_order), never sent to a broker or Telegram.
+# =====================================================================
+execution:
+  mode: notify_only            # notify_only | auto  — SAFE DEFAULT: notify_only
+  notify:
+    channel: telegram          # Telegram bot token + chat id are SECRETS and
+                               # live in .env (TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID),
+                               # never here.
+    # Delivery is handled by the MCP tools `send_trade_alert` /
+    # `send_telegram_notification` (trading-mcp-server). They no-op safely if
+    # TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID are unset, and the agent always
+    # shows the alert inline as well.
+
+mcp:
+  # The MCP server is the published PyPI package `trading-mcp-server`,
+  # installed via `pip install` (see requirements.txt). Launched by .mcp.json
+  # as `python -m trading_mcp_server.server`.
+  source: package
+  package_name: trading-mcp-server
+  server_name: trading-agent   # name registered in .mcp.json

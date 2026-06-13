@@ -168,3 +168,7 @@ order_data/
 key.txt
 trade_logs/*.log
 posts/*.png
+
+# Trading runtime state (written by trading-mcp-server)
+storage/
+archive/legacy-openai-app/__pycache__/

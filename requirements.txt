@@ -1,32 +1,4 @@
-openai
-requests
-smartapi-python
-pyotp
-logzero
-websocket-client
-pandas
-ta
-scikit-learn
-bs4
-lxml
-python-telegram-bot
-nsetools
-nsepython
+# MCP server providing all trading tools, installed from PyPI.
+trading-mcp-server[broker,scanners]
 
-# LangChain ecosystem
-langchain
-langchain-core
-langchain-community
-langsmith
-prometheus-client
-structlog
 pyyaml
-croniter
-tenacity
-redis
-sqlalchemy
-psycopg2-binary==2.9.9
-
-# Post generator
-pillow
-cairosvg
